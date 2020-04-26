@@ -1,3 +1,11 @@
+spotckup/
+access_token
+refresh_token
+playlist.json
+playlists-metadata.json
+
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
