@@ -1,16 +1,18 @@
 import argparse
+import base64
 import logging
 import uuid
 import webbrowser
-import base64
+
 import requests as r
+from utils import do_request_validate_response
 
 # nzksazdwlqtmfkmikw@awdrt.org
 # Password1234-
 
 if __name__ == '__main__':
     logging.basicConfig(format='[%(levelname)s] %(message)s')
-    log: logging.Logger = logging.getLogger(__name__)
+    log: logging.Logger = logging.getLogger('')
 
     parser = argparse.ArgumentParser(prog='spotckup',
                                      description='Create JSON local backup of music and playlists from a user spotify library')
@@ -34,7 +36,8 @@ if __name__ == '__main__':
     log.info("Client id: " + args.client_id + "\tClient secret: " + args.client_secret)
     random_state = uuid.uuid4()
     log.debug("Generated state: " + random_state.__str__())
-    res: r.Response = r.get('https://accounts.spotify.com/authorize', params={
+
+    res: r.Response = do_request_validate_response('GET', 'https://accounts.spotify.com/authorize', params={
         'client_id': args.client_id,
         'response_type': 'code',
         'redirect_uri': args.redirect_uri,
@@ -53,7 +56,7 @@ if __name__ == '__main__':
     log.info('Authorization code: ' + tokens['code'])
     if tokens['state'] != random_state.__str__(): raise Exception("Invalid state")
 
-    res: r.Response = r.post('https://accounts.spotify.com/api/token', data={
+    res: r.Response = do_request_validate_response('POST', 'https://accounts.spotify.com/api/token', data={
         'grant_type': "authorization_code",
         'code': tokens['code'],
         'redirect_uri': args.redirect_uri
@@ -61,10 +64,6 @@ if __name__ == '__main__':
         "Authorization": "Basic " + str(
             base64.b64encode(bytes(args.client_id + ':' + args.client_secret, 'utf-8')).decode('utf-8'))
     })
-
-    log.debug('Response status code: ' + str(res.status_code))
-    if res.status_code != 200:
-        raise Exception("Could not receive access token")
 
     res_json: {} = res.json()
     log.info('Access token: ' + res_json['access_token'])

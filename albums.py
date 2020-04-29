@@ -1,22 +1,17 @@
 import argparse
 import json
 import logging
-from hashlib import md5
-from typing import Dict, List
+from typing import List
 
-import requests as r
+from utils import do_request_validate_response
 
 
 def get_tracks_from_albums(url: str):
     res: List = []
     while url is not None:
-        next_res = r.get(url, headers={
+        next_res = do_request_validate_response('GET', url, headers={
             "Authorization": "Bearer " + token
-        })
-        if not next_res.status_code:
-            log.error(next_res)
-            raise Exception(f'Response code: {next_res.status_code}, error: {next_res.text}')
-        next_res = next_res.json()
+        }).json()
         res = res + [
             {album['album']['id']: {
                 'name': album['album']['name'],
@@ -31,7 +26,7 @@ def get_tracks_from_albums(url: str):
 
 if __name__ == '__main__':
     logging.basicConfig(format='[%(levelname)s] %(message)s')
-    log: logging.Logger = logging.getLogger(__name__)
+    log: logging.Logger = logging.getLogger('')
 
     parser = argparse.ArgumentParser(prog='spotckup',
                                      description='Create JSON local backup of music and playlists from a user spotify library')

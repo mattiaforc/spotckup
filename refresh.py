@@ -3,10 +3,11 @@ import base64
 import logging
 
 import requests as r
+from utils import do_request_validate_response
 
 if __name__ == '__main__':
     logging.basicConfig(format='[%(levelname)s] %(message)s')
-    log: logging.Logger = logging.getLogger(__name__)
+    log: logging.Logger = logging.getLogger('')
 
     parser = argparse.ArgumentParser(prog='spotckup',
                                      description='Create JSON local backup of music and playlists from a user spotify library')
@@ -26,17 +27,13 @@ if __name__ == '__main__':
         with open('refresh_token', 'r') as f:
             token = f.read()
 
-    res: r.Response = r.post('https://accounts.spotify.com/api/token', data={
+    res: r.Response = do_request_validate_response('POST', 'https://accounts.spotify.com/api/token', data={
         'grant_type': "refresh_token",
         'refresh_token': token
     }, headers={
         "Authorization": "Basic " + str(
             base64.b64encode(bytes(args.client_id + ':' + args.client_secret, 'utf-8')).decode('utf-8'))
     })
-
-    log.debug('Response status code: ' + str(res.status_code))
-    if res.status_code != 200:
-        raise Exception("Could not refresh access token")
 
     res_json: {} = res.json()
     log.info('Access token: ' + res_json['access_token'])
