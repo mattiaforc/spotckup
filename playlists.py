@@ -53,7 +53,8 @@ if __name__ == '__main__':
 
     os.makedirs(os.path.dirname("img/"), exist_ok=True)
     for playlist_meta in res['items']:
-        save_image_from_url(playlist_meta['images'][0]['url'], playlist_meta['id'])
+        if playlist_meta['images']:
+            save_image_from_url(playlist_meta['images'][0]['url'], playlist_meta['id'])
 
     with open('playlists-metadata.json', 'w+') as f:
         json.dump(res['items'], f, indent=4)

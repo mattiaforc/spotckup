@@ -13,10 +13,11 @@ def get_tracks_from_albums(url: str):
             "Authorization": "Bearer " + token
         }).json()
         res = res + [
-            {album['album']['id']: {
+            {
+                'id': album['album']['id'],
                 'name': album['album']['name'],
                 'artists': list(map(lambda a: a['name'], album['album']['artists']))
-            }}
+            }
             for album in next_res['items']
         ]
         url = next_res['next']
