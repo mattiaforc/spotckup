@@ -58,17 +58,17 @@ if __name__ == '__main__':
     print('Fetched {} playlists.'.format(str(len(res_json['items']))))
 
     with open('playlists-metadata.json', 'w+') as f:
-        json.dump(res_json['items'], f)
+        json.dump(res_json['items'], f, indent=4)
 
     print('Succesfully wrote {} playlists metadata in playlists-metadata.json'.format(str(len(res_json['items']))))
 
     with open('playlist.json', 'w') as f:
         json.dump({
-            md5((playlist['id'] + playlist['snapshot_id']).encode('utf-8')).hexdigest(): get_tracks_from_playlist(
+            (playlist['id'] + '#' + playlist['snapshot_id']): get_tracks_from_playlist(
                 'https://api.spotify.com/v1/playlists/{}/tracks?fields=next,items(track(name,uri,album(name),artists(name),artist(name)))'
                     .format(playlist['id']))
             for playlist in res_json['items']
         }, f, indent=4)
 
-    print('Successful backup of all playlists.')
+    print('The playlists backup has completed succesfully.')
     exit(0)

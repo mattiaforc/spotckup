@@ -1,9 +1,8 @@
 spotckup/
 access_token
 refresh_token
-playlist.json
-playlists-metadata.json
-
+*.json
+img/
 .idea/
 
 # Byte-compiled / optimized / DLL files

@@ -5,6 +5,9 @@ import webbrowser
 import base64
 import requests as r
 
+# nzksazdwlqtmfkmikw@awdrt.org
+# Password1234-
+
 if __name__ == '__main__':
     logging.basicConfig(format='[%(levelname)s] %(message)s')
     log: logging.Logger = logging.getLogger(__name__)
@@ -24,8 +27,9 @@ if __name__ == '__main__':
                   'playlist-modify-public ' \
                   'playlist-read-private ' \
                   'playlist-modify-private ' \
+                  'ugc-image-upload ' \
                   'user-library-modify ' \
-                  'user-library-read'
+                  'user-library-read '
 
     log.info("Client id: " + args.client_id + "\tClient secret: " + args.client_secret)
     random_state = uuid.uuid4()
