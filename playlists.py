@@ -64,7 +64,7 @@ if __name__ == '__main__':
     with open('playlist.json', 'w') as f:
         json.dump({
             (playlist['id'] + '#' + playlist['snapshot_id']): get_tracks_from_playlist(
-                'https://api.spotify.com/v1/playlists/{}/tracks?fields=next,items(track(name,uri,album(name),artists(name),artist(name)))'
+                'https://api.spotify.com/v1/playlists/{}/tracks?fields=next,items(is_local,track(name,uri,album(name),artists(name),artist(name)))'
                     .format(playlist['id']))
             for playlist in res['items']
         }, f, indent=4)

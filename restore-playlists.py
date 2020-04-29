@@ -40,6 +40,7 @@ if __name__ == '__main__':
     imgs_urls: {} = {}
 
     for playlist_meta in playlists_metadata:
+        if len(playlist_meta) == 0: break
         res: r.Response = do_request_validate_response('POST',
                                                        'https://api.spotify.com/v1/users/{}/playlists'.format(user_id),
                                                        data=json.dumps({
@@ -54,7 +55,7 @@ if __name__ == '__main__':
                                                        })
         res_json = res.json()
         link_metadata[playlist_meta['id']] = res_json['id']
-        if playlist_meta['images'] is not None:
+        if len(playlist_meta['images']) != 0:
             log.debug('Playlist cover: ' + playlist_meta['images'][0]['url'])
             imgs_urls[playlist_meta['id']] = playlist_meta['images'][0]['url']
         log.debug(f'Succesfuly created playlist {playlist_meta["name"]}.\nStatus code: {res.status_code}')
@@ -79,9 +80,9 @@ if __name__ == '__main__':
                 img = img_res.content  # Binary content!
                 with open("img/{}.jpg".format(old_id), 'wb') as img_file:
                     img_file.write(img)
-
-            for i in range(0, len(playlists[playlist]), 100):
-                chunk = [track['track']['uri'] for track in playlists[playlist][i:i + 100]]
+            playlist_no_local = list(filter(lambda track: not track['is_local'], playlists[playlist]))
+            for i in range(0, len(playlist_no_local), 100):
+                chunk = [track['track']['uri'] for track in playlist_no_local[i:i + 100]]
                 res: r.Response = do_request_validate_response('POST',
                                                                f'https://api.spotify.com/v1/playlists/{id}/tracks',
                                                                data=json.dumps({
@@ -100,7 +101,6 @@ if __name__ == '__main__':
                                                                    "Authorization": "Bearer " + token,
                                                                    "Content-Type": "image/jpeg"
                                                                })
-            del res
 
     print('The playlists were imported on spotify succesfully.')
     exit(0)
