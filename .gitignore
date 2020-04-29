@@ -1,9 +1,10 @@
 spotckup/
-access_token
-refresh_token
+data/access_token
+data/refresh_token
 *.json
 img/
 .idea/
+*venv*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
