@@ -1,5 +1,5 @@
 # Spotckup
-![](https://img.shields.io/pypi/v/spotckup?color=blue) ![](https://img.shields.io/pypi/l/spotckup) ![](https://img.shields.io/pypi/dm/spotckup)
+![](https://img.shields.io/pypi/v/spotckup?color=blue) ![](https://img.shields.io/pypi/l/spotckup)
 
 Spotckup is a small utility for easy local json backup of spotify library and playlists.
 You can install it with `pip` by using the command
