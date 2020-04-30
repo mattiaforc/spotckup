@@ -5,24 +5,26 @@ import os
 
 import requests as r
 
-from spotckup.utils import do_request_validate_response
+from spotckup.utils import do_request_validate_response, path_or_create
 
 
-def restore_playlist(authorization_token: str, debug: bool, verbose: bool):
+def restore_playlist(authorization_token: str, dir_path: str, debug: bool, verbose: bool):
     logging.basicConfig(format='[%(levelname)s] %(message)s')
     log: logging.Logger = logging.getLogger('')
     if debug: log.setLevel('DEBUG')
 
+    path: str = path_or_create(dir_path)
+
     token: str = authorization_token
     if token is None:
-        with open('../data/access_token', 'r') as f:
+        with open(f'{path}/access_token', 'r') as f:
             token = f.read()
 
     user_id: str = do_request_validate_response('GET', 'https://api.spotify.com/v1/me', verbose=verbose, headers={
         "Authorization": "Bearer " + token
     }).json()['id']
 
-    with open('../data/playlists-metadata.json', 'r') as f:
+    with open(f'{path}/playlists-metadata.json', 'r') as f:
         playlists_metadata = json.load(f)
         print(f"Read from local backup {len(playlists_metadata)} playlists.")
 
@@ -53,45 +55,45 @@ def restore_playlist(authorization_token: str, debug: bool, verbose: bool):
         log.debug(f"New id: {res.json()['id']}")
         del res
 
-    with open('../data/playlist.json', 'r') as f:
+    with open(f'{path}/playlist.json', 'r') as f:
         playlists = json.load(f)
         for playlist in playlists:
             old_id = playlist.split('#')[0]
             id = link_metadata[old_id]
             img = None
 
-            if os.path.exists("img/{}.jpg".format(old_id)) and os.path.isfile("img/{}.jpg".format(old_id)):
-                with open("img/{}.jpg".format(old_id), 'rb') as img_file:
+            if os.path.exists(f'{path}/img/{old_id}.jpg') and os.path.isfile(f'{path}/img/{old_id}.jpg'):
+                with open(f'{path}/img/{old_id}.jpg', 'rb') as img_file:
                     img = img_file.read()
             elif old_id in imgs_urls:
                 img_res: r.Response = do_request_validate_response('GET', imgs_urls[old_id],
                                                                    verbose=verbose, stream=True)
                 img_res.raw.decode_content = True
                 img = img_res.content  # Binary content!
-                with open("img/{}.jpg".format(old_id), 'wb') as img_file:
+                with open(f'{path}/img/{old_id}.jpg', 'wb') as img_file:
                     img_file.write(img)
             playlist_no_local = list(filter(lambda track: not track['is_local'], playlists[playlist]))
             for i in range(0, len(playlist_no_local), 100):
                 chunk = [track['track']['uri'] for track in playlist_no_local[i:i + 100]]
-                res: r.Response = do_request_validate_response('POST',
-                                                               f'https://api.spotify.com/v1/playlists/{id}/tracks',
-                                                               verbose=verbose,
-                                                               data=json.dumps({
-                                                                   "uris": chunk
-                                                               }),
-                                                               headers={
-                                                                   "Authorization": "Bearer " + token,
-                                                                   "Content-Type": "application/json"
-                                                               })
+                do_request_validate_response('POST',
+                                             f'https://api.spotify.com/v1/playlists/{id}/tracks',
+                                             verbose=verbose,
+                                             data=json.dumps({
+                                                 "uris": chunk
+                                             }),
+                                             headers={
+                                                 "Authorization": "Bearer " + token,
+                                                 "Content-Type": "application/json"
+                                             })
 
             if img is not None:
-                res: r.Response = do_request_validate_response('PUT',
-                                                               f'https://api.spotify.com/v1/playlists/{id}/images',
-                                                               verbose=verbose,
-                                                               data=base64.b64encode(img).decode('utf-8'),
-                                                               headers={
-                                                                   "Authorization": "Bearer " + token,
-                                                                   "Content-Type": "image/jpeg"
-                                                               })
+                do_request_validate_response('PUT',
+                                             f'https://api.spotify.com/v1/playlists/{id}/images',
+                                             verbose=verbose,
+                                             data=base64.b64encode(img).decode('utf-8'),
+                                             headers={
+                                                 "Authorization": "Bearer " + token,
+                                                 "Content-Type": "image/jpeg"
+                                             })
 
     print('The playlists were imported on spotify succesfully.')

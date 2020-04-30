@@ -1,14 +1,14 @@
 import base64
 import logging
+import os
 import uuid
 import webbrowser
 
 import requests as r
+from spotckup.utils import do_request_validate_response, path_or_create
 
-from spotckup.utils import do_request_validate_response
 
-
-def auth(client_id: str, client_secret: str, redirect_uri: str, debug: bool, verbose: bool):
+def auth(client_id: str, client_secret: str, dir_path: str, redirect_uri: str, debug: bool, verbose: bool):
     logging.basicConfig(format='[%(levelname)s] %(message)s')
     log: logging.Logger = logging.getLogger('')
     if debug: log.setLevel('DEBUG')
@@ -61,10 +61,11 @@ def auth(client_id: str, client_secret: str, redirect_uri: str, debug: bool, ver
     log.info('Expires in: ' + str(res_json['expires_in']))
     log.info('Refresh token: ' + res_json['refresh_token'])
 
-    with open("../data/access_token", "w+") as f:
+    path: str = path_or_create(dir_path)
+    with open(f"{path}/access_token", "w+") as f:
         f.write(res_json['access_token'])
 
-    with open("../data/refresh_token", "w+") as f:
+    with open(f"{path}/refresh_token", "w+") as f:
         f.write(res_json['refresh_token'])
 
     print("Done. Tokens saved in files access_token and refresh_token.\n" +
