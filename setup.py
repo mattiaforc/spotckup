@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="spotckup-mattiaforc",
+    name="spotckup",
     version="0.1.0",
     author="mattiaforc",
     author_email="mattiaforc@gmail.com",

@@ -69,6 +69,6 @@ def auth(client_id: str, client_secret: str, dir_path: str, redirect_uri: str, d
         f.write(res_json['refresh_token'])
 
     print("Done. Tokens saved in files access_token and refresh_token.\n" +
-          "You may now want to run the spotckup script or set the cron job for refreshing automatically the token." +
+          "You may now want to run $ spotckup backup or set the cron job for automatic backup." +
           "Read the README file for more infos.")
     exit(0)

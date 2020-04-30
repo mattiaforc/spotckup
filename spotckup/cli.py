@@ -1,4 +1,6 @@
 import click
+import os
+import shutil
 
 from spotckup import authorize, refresh as ref, library, playlists, restore_playlists, restore_library
 
@@ -12,8 +14,17 @@ def spotckup():
 
 
 @spotckup.command()
-@click.argument('client-id')
-@click.argument('client-secret')
+def clear():
+    if str(input(
+            "Attention! You are going to delete all local files, including access/refresh tokens, cover images and "
+            "playlists/library from default directory ~/Documents/spotckup.\n\n"
+            "Are you sure? (y/[n]):\t")) == 'y':
+        shutil.rmtree(os.path.join(os.path.expanduser('~'), 'Documents/spotckup'), ignore_errors=True)
+
+
+@spotckup.command()
+@click.option('--client-id', default=os.getenv('SPOTIFY_CLIENT_ID'))
+@click.option('--client-secret', default=os.getenv('SPOTIFY_CLIENT_SECRET'))
 @click.option('--redirect-uri', default='http://localhost', help='The redirect uri defined in the spotify web app.'
                                                                  + ' If the provided uri does not match the spotify one '
                                                                  + 'the authorization will fail.')
@@ -22,6 +33,7 @@ def spotckup():
 @click.option('--debug', '-d', default=False, is_flag=True, help='Enable debug output.')
 @click.option('--verbose', default=False, is_flag=True, help='Makes debug log more verbose.')
 def auth(client_id, client_secret, path, redirect_uri, debug, verbose):
+    validate_id_and_secret(client_id, client_secret)
     authorize.auth(client_id, client_secret, path, redirect_uri, debug, verbose)
 
 
@@ -58,8 +70,8 @@ def restore(token, path, debug, verbose, only_library, only_playlist):
 
 
 @spotckup.command()
-@click.argument('client-id')
-@click.argument('client-secret')
+@click.option('--client-id', default=os.getenv('SPOTIFY_CLIENT_ID'))
+@click.option('--client-secret', default=os.getenv('SPOTIFY_CLIENT_SECRET'))
 @click.option('--token', '-t', default=None,
               help='The refresh token, if this option is not present it will try to read it '
                    + 'from data/refresh_token')
@@ -68,7 +80,19 @@ def restore(token, path, debug, verbose, only_library, only_playlist):
 @click.option('--debug', '-d', default=False, is_flag=True, help='Enable debug output.')
 @click.option('--verbose', default=False, is_flag=True, help='Makes debug log more verbose.')
 def refresh(client_id, client_secret, token, path, debug, verbose):
+    validate_id_and_secret(client_id, client_secret)
     ref.refresh_token(client_id, client_secret, path, token, debug, verbose)
+
+
+def validate_id_and_secret(client_id: str, client_secret: str):
+    if client_id is None or client_id is '':
+        print("Client ID is mandatory. You can either set an environment variable named SPOTIFY_CLIENT_ID "
+              + "or pass it with the --client-id flag.")
+        exit(1)
+    if client_secret is None or client_secret is '':
+        print("Client secret is mandatory. You can either set an environment variable named SPOTIFY_CLIENT_SECRET "
+              + "or pass it with the --client-secret flag.")
+        exit(1)
 
 
 if __name__ == '__main__':

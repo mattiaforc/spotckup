@@ -8,11 +8,11 @@ from spotckup.utils import save_image_from_url, do_request_validate_response, pa
 
 
 @timer
-def get_tracks_from_playlist(url: str, token: str) -> List[Dict]:
+def get_list_from_paginated_response(url: str, token: str, verbose: bool = False) -> List[Dict]:
     res: List = []
     log: logging.Logger = logging.getLogger('')
     while url is not None:
-        next_res = do_request_validate_response('GET', url, headers={
+        next_res = do_request_validate_response('GET', url, verbose=verbose, headers={
             "Authorization": "Bearer " + token
         }).json()
         log.debug(next_res['next'])
@@ -39,31 +39,34 @@ def backup_playlist(authorization_token, dir_path, debug, verbose):
                                                     "Authorization": "Bearer " + token
                                                 }).json()['id']
 
-    res: {} = do_request_validate_response('GET', 'https://api.spotify.com/v1/users/{}/playlists'.format(user_id),
-                                           verbose=verbose,
-                                           params={
-                                               'limit': 50,
-                                               'offset': 0},
-                                           headers={"Authorization": "Bearer " + token
-                                                    }).json()
-    print('Fetched {} playlists.'.format(str(len(res['items']))))
+    playlists: [] = get_list_from_paginated_response(f'https://api.spotify.com/v1/users/{user_id}/playlists', token,
+                                                     verbose=verbose)
+    # playlists: {} = do_request_validate_playlistsponse('GET', 'https://api.spotify.com/v1/users/{}/playlists'.format(user_id),
+    #                                        verbose=verbose,
+    #                                        params={
+    #                                            'limit': 50,
+    #                                            'offset': 0},
+    #                                        headers={"Authorization": "Bearer " + token
+    #                                                 }).json()
+    print('Fetched {} playlists.'.format(str(len(playlists))))
 
     os.makedirs(os.path.dirname(f"{path}/img/"), exist_ok=True)
-    for playlist_meta in res['items']:
+    for playlist_meta in playlists:
         if playlist_meta['images']:
-            save_image_from_url(playlist_meta['images'][0]['url'], playlist_meta['id'], f'{path}/img')
+            if not os.path.exists(f'{path}/img/{playlist_meta["id"]}.jpg'):
+                save_image_from_url(playlist_meta['images'][0]['url'], playlist_meta['id'], f'{path}/img')
 
     with open(f'{path}/playlists-metadata.json', 'w+') as f:
-        json.dump(res['items'], f, indent=4)
+        json.dump(playlists, f, indent=4)
 
-    print('Succesfully wrote {} playlists metadata in playlists-metadata.json'.format(str(len(res['items']))))
+    log.info('Succesfully wrote {} playlists metadata in playlists-metadata.json'.format(str(len(playlists))))
 
     with open(f'{path}/playlist.json', 'w') as f:
         json.dump({
-            (playlist['id'] + '#' + playlist['snapshot_id']): get_tracks_from_playlist(
+            (playlist['id'] + '#' + playlist['snapshot_id']): get_list_from_paginated_response(
                 'https://api.spotify.com/v1/playlists/{}/tracks?fields=next,items(is_local,track(name,uri,album(name),artists(name),artist(name)))'
-                    .format(playlist['id']), token)
-            for playlist in res['items']
+                    .format(playlist['id']), token, verbose=verbose)
+            for playlist in playlists
         }, f, indent=4)
 
     print('The playlists backup has completed succesfully.')

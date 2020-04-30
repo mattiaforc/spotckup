@@ -18,8 +18,9 @@ def save_image_from_url(url: str, img_name: str, path: str) -> None:
 def do_request_validate_response(method: str, url: str, verbose: bool = False, **kwargs) -> r.Response:
     log = logging.getLogger('')
     log.debug(f"Requesting: {method} {url}")
+    log.debug(str(verbose))
     if verbose:
-        log.debug(**kwargs)
+        log.debug([str(k) + ':\t' + v + '\n' for k, v in kwargs.items()])
     res = r.request(method, url, **kwargs)
     log.debug(f'Response status code: {res.status_code}')
     if verbose:

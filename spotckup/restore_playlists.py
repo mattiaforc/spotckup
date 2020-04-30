@@ -65,14 +65,10 @@ def restore_playlist(authorization_token: str, dir_path: str, debug: bool, verbo
             if os.path.exists(f'{path}/img/{old_id}.jpg') and os.path.isfile(f'{path}/img/{old_id}.jpg'):
                 with open(f'{path}/img/{old_id}.jpg', 'rb') as img_file:
                     img = img_file.read()
-            elif old_id in imgs_urls:
-                img_res: r.Response = do_request_validate_response('GET', imgs_urls[old_id],
-                                                                   verbose=verbose, stream=True)
-                img_res.raw.decode_content = True
-                img = img_res.content  # Binary content!
-                with open(f'{path}/img/{old_id}.jpg', 'wb') as img_file:
-                    img_file.write(img)
-            playlist_no_local = list(filter(lambda track: not track['is_local'], playlists[playlist]))
+
+            playlist_no_local = list(filter(lambda not_local: not_local['track'] is not None,
+                                            filter(lambda track: not track['is_local'],
+                                                   playlists[playlist])))
             for i in range(0, len(playlist_no_local), 100):
                 chunk = [track['track']['uri'] for track in playlist_no_local[i:i + 100]]
                 do_request_validate_response('POST',
@@ -81,7 +77,7 @@ def restore_playlist(authorization_token: str, dir_path: str, debug: bool, verbo
                                              data=json.dumps({
                                                  "uris": chunk
                                              }),
-                                             headers={
+                              ['track']               headers={
                                                  "Authorization": "Bearer " + token,
                                                  "Content-Type": "application/json"
                                              })
