@@ -4,7 +4,6 @@ import logging
 import os
 
 import requests as r
-
 from spotckup.utils import do_request_validate_response, path_or_create
 
 
@@ -77,11 +76,10 @@ def restore_playlist(authorization_token: str, dir_path: str, debug: bool, verbo
                                              data=json.dumps({
                                                  "uris": chunk
                                              }),
-                              ['track']               headers={
+                                             headers={
                                                  "Authorization": "Bearer " + token,
                                                  "Content-Type": "application/json"
                                              })
-
             if img is not None:
                 do_request_validate_response('PUT',
                                              f'https://api.spotify.com/v1/playlists/{id}/images',

@@ -41,13 +41,6 @@ def backup_playlist(authorization_token, dir_path, debug, verbose):
 
     playlists: [] = get_list_from_paginated_response(f'https://api.spotify.com/v1/users/{user_id}/playlists', token,
                                                      verbose=verbose)
-    # playlists: {} = do_request_validate_playlistsponse('GET', 'https://api.spotify.com/v1/users/{}/playlists'.format(user_id),
-    #                                        verbose=verbose,
-    #                                        params={
-    #                                            'limit': 50,
-    #                                            'offset': 0},
-    #                                        headers={"Authorization": "Bearer " + token
-    #                                                 }).json()
     print('Fetched {} playlists.'.format(str(len(playlists))))
 
     os.makedirs(os.path.dirname(f"{path}/img/"), exist_ok=True)
@@ -56,17 +49,24 @@ def backup_playlist(authorization_token, dir_path, debug, verbose):
             if not os.path.exists(f'{path}/img/{playlist_meta["id"]}.jpg'):
                 save_image_from_url(playlist_meta['images'][0]['url'], playlist_meta['id'], f'{path}/img')
 
-    with open(f'{path}/playlists-metadata.json', 'w+') as f:
-        json.dump(playlists, f, indent=4)
+    with open(f'{path}/playlists-metadata.json', 'r') as f:
+        cached: [] = [p['snapshot_id'] for p in json.load(f)]
 
-    log.info('Succesfully wrote {} playlists metadata in playlists-metadata.json'.format(str(len(playlists))))
+    new_playlists: [] = list(filter(lambda p: p['snapshot_id'] not in cached, playlists))
+    print("Number of playlists that are already up to date and do not need to be re-downloaded: " +
+          str(len(new_playlists)))
+
+    with open(f'{path}/playlists-metadata.json', 'w+') as f:
+        json.dump(new_playlists, f, indent=4)
+
+    log.info('Wrote {} playlists metadata in playlists-metadata.json'.format(str(len(new_playlists))))
 
     with open(f'{path}/playlist.json', 'w') as f:
         json.dump({
-            (playlist['id'] + '#' + playlist['snapshot_id']): get_list_from_paginated_response(
+            (p['id'] + '#' + p['snapshot_id']): get_list_from_paginated_response(
                 'https://api.spotify.com/v1/playlists/{}/tracks?fields=next,items(is_local,track(name,uri,album(name),artists(name),artist(name)))'
-                    .format(playlist['id']), token, verbose=verbose)
-            for playlist in playlists
+                    .format(p['id']), token, verbose=verbose)
+            for p in new_playlists
         }, f, indent=4)
 
     print('The playlists backup has completed succesfully.')
