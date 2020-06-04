@@ -9,7 +9,7 @@ pip install spotckup
 or if you want you can clone the repository, build it manually with `setuptools` by running the script `build.sh` and
 then install it (assuming you are in the root directory) with
 ```sh
-pip install dist/spotckup_mattiaforc-0.1.0-py3-none-any.whl
+pip install dist/spotckup_mattiaforc-x.y.z-py3-none-any.whl
 ```  
 ## Usage
 **Available commands** (use `spotckup <command> -h` or `spotckup <command> --help` for in-depth details):
@@ -122,3 +122,11 @@ So, for backing up data weekly at 12pm you could do:
 ```
 To facilitate writing cronjobs, you should probably use [crontab guru](https://crontab.guru), an easy web editor for cron expressions.
 **Remember** to always add the refresh command before any other command, otherwise the application will not be authorized to do any operation (the token expires in an hour).
+
+## Changelog
+
+### v.0.1.1
+Now spotckup checks if there have been updates to playlists before downloading data, allowing the backup process to be faster and cheaper. This operation is not supported for library backups, since there is no way of hashing/checking updates to the library with current Spotify APIs. 
+
+### v.0.1.0
+First release

@@ -4,6 +4,7 @@ data/refresh_token
 img/
 .idea/
 *venv*
+pypi-upload.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
