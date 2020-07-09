@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="spotckup",
-    version="0.1.1",
+    version="0.1.2",
     author="mattiaforc",
     author_email="mattiaforc@gmail.com",
     description="A small utility for creating JSON local backups of music and playlists from spotify",

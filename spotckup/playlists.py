@@ -49,12 +49,15 @@ def backup_playlist(authorization_token, dir_path, debug, verbose):
             if not os.path.exists(f'{path}/img/{playlist_meta["id"]}.jpg'):
                 save_image_from_url(playlist_meta['images'][0]['url'], playlist_meta['id'], f'{path}/img')
 
-    with open(f'{path}/playlists-metadata.json', 'r') as f:
-        cached: [] = [p['snapshot_id'] for p in json.load(f)]
+    try:
+        with open(f'{path}/playlists-metadata.json', 'r') as f:
+            cached: [] = [p['snapshot_id'] for p in json.load(f)]
+    except FileNotFoundError:
+        cached : [] = []
 
     new_playlists: [] = list(filter(lambda p: p['snapshot_id'] not in cached, playlists))
     print("Number of playlists that are already up to date and do not need to be re-downloaded: " +
-          str(len(new_playlists)))
+          str(len(playlists) - len(new_playlists)))
 
     with open(f'{path}/playlists-metadata.json', 'w+') as f:
         json.dump(new_playlists, f, indent=4)

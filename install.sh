@@ -1,4 +1,4 @@
-pip uninstall spotckup -y
+pip3 uninstall spotckup -y
 shopt -s nullglob
 if [ $# -eq 0 ]; then
   wheels=(dist/*.whl)
@@ -9,12 +9,12 @@ if [ $# -eq 0 ]; then
     done
     echo "Which one do you want to install?"
     read -r num
-    pip install "${wheels[num - 1]}"
+    pip3 install "${wheels[num - 1]}"
   else
-    pip install "${wheels[0]}"
+    pip3 install "${wheels[0]}"
   fi
 elif [ $# -eq 1 ]; then
-  pip install "$1"
+  pip3 install "$1"
 else
   echo "Usage: $0 <path to wheel>"
 fi
