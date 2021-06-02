@@ -2,5 +2,5 @@ requests~=2.23.0
 certifi>=2017.4.17
 chardet<4,>=3.0.2
 idna<3,>=2.5
-urllib3==1.25.9
+urllib3==1.26.5
 click~=7.1.2
